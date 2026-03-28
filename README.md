@@ -1,5 +1,9 @@
 # treap-impl
-Treap (randomized BST). Zero dependencies.
+
+Zero-dependency Python implementation.
+
+## Usage
+
 ```bash
 python3 treap_impl.py
 ```

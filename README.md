@@ -1,11 +1,9 @@
-# treap-impl
+# Treap (Tree + Heap)
 
-Treap (tree + heap) data structure.
-
-Zero dependencies. Python 3.8+.
+Treap (Tree + Heap) — zero-dependency Python implementation.
 
 ## Usage
 
 ```bash
-python3 treap_impl.py --help
+python3 treap_impl.py demo
 ```

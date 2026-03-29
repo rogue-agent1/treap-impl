@@ -1,9 +1,14 @@
-# Treap (Tree + Heap)
+# treap-impl
 
-Treap (Tree + Heap) — zero-dependency Python implementation.
+Randomized treap (BST + heap)
 
 ## Usage
 
 ```bash
-python3 treap_impl.py demo
+python3 treap_impl.py --help
 ```
+
+## Features
+
+- Zero dependencies (Python 3.8+)
+- Single file implementation

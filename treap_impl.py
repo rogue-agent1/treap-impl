@@ -1,59 +1,69 @@
 #!/usr/bin/env python3
-"""Treap — randomized BST with heap priorities."""
-import sys, random
+"""treap_impl - Randomized treap."""
+import sys, argparse, json, random
 
-class Node:
-    def __init__(self, key, pri=None):
-        self.key, self.pri = key, pri or random.random()
+class TreapNode:
+    def __init__(self, key):
+        self.key = key
+        self.priority = random.random()
         self.left = self.right = None
+        self.size = 1
+
+def _size(n): return n.size if n else 0
+def _update(n):
+    if n: n.size = 1 + _size(n.left) + _size(n.right)
+
+def split(node, key):
+    if not node: return None, None
+    if node.key <= key:
+        node.right, right = split(node.right, key)
+        _update(node)
+        return node, right
+    else:
+        left, node.left = split(node.left, key)
+        _update(node)
+        return left, node
+
+def merge(left, right):
+    if not left or not right: return left or right
+    if left.priority > right.priority:
+        left.right = merge(left.right, right)
+        _update(left)
+        return left
+    else:
+        right.left = merge(left, right.left)
+        _update(right)
+        return right
 
 class Treap:
-    def __init__(self): self.root = None
-    def _rot_right(self, n):
-        t = n.left; n.left = t.right; t.right = n; return t
-    def _rot_left(self, n):
-        t = n.right; n.right = t.left; t.left = n; return t
-    def _insert(self, n, key):
-        if not n: return Node(key)
-        if key < n.key:
-            n.left = self._insert(n.left, key)
-            if n.left.pri > n.pri: n = self._rot_right(n)
-        elif key > n.key:
-            n.right = self._insert(n.right, key)
-            if n.right.pri > n.pri: n = self._rot_left(n)
-        return n
-    def _delete(self, n, key):
-        if not n: return None
-        if key < n.key: n.left = self._delete(n.left, key)
-        elif key > n.key: n.right = self._delete(n.right, key)
-        else:
-            if not n.left: return n.right
-            if not n.right: return n.left
-            if n.left.pri > n.right.pri:
-                n = self._rot_right(n); n.right = self._delete(n.right, key)
-            else:
-                n = self._rot_left(n); n.left = self._delete(n.left, key)
-        return n
-    def insert(self, key): self.root = self._insert(self.root, key)
-    def delete(self, key): self.root = self._delete(self.root, key)
-    def search(self, key):
-        n = self.root
-        while n:
-            if key == n.key: return True
-            n = n.left if key < n.key else n.right
-        return False
+    def __init__(self):
+        self.root = None
+    def insert(self, key):
+        left, right = split(self.root, key - 0.5)
+        self.root = merge(merge(left, TreapNode(key)), right)
+    def remove(self, key):
+        left, mid_right = split(self.root, key - 0.5)
+        _, right = split(mid_right, key)
+        self.root = merge(left, right)
     def inorder(self):
-        res = []; stack = []; n = self.root
-        while stack or n:
-            while n: stack.append(n); n = n.left
-            n = stack.pop(); res.append(n.key); n = n.right
-        return res
+        result = []
+        def dfs(n):
+            if not n: return
+            dfs(n.left); result.append(n.key); dfs(n.right)
+        dfs(self.root)
+        return result
+    @property
+    def size(self): return _size(self.root)
 
 def main():
+    p = argparse.ArgumentParser(description="Treap CLI")
+    p.add_argument("values", nargs="+", type=int)
+    p.add_argument("--remove", nargs="*", type=int, default=[])
+    args = p.parse_args()
     t = Treap()
-    for x in [5,3,8,1,4,7,9]: t.insert(x)
-    print(f"Inorder: {t.inorder()}")
-    print(f"Search 4: {t.search(4)}, Search 6: {t.search(6)}")
-    t.delete(3); print(f"After delete 3: {t.inorder()}")
+    for v in args.values: t.insert(v)
+    for v in args.remove: t.remove(v)
+    print(json.dumps({"size": t.size, "sorted": t.inorder()}, indent=2))
 
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+    main()
